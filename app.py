@@ -77,7 +77,6 @@ def prcp():
     return jsonify(prcp_dict)
 
 # VERIFIED AS WORKING
-# DEBUG!! - SOMETIMES IT WORKS AND SOMETIMES IT DOESN'T
 @app.route("/api/v1.0/stations")
 def stations():
     print("Stations")
@@ -108,18 +107,13 @@ def tobs():
         tobs_dict.update({key: value})
     return jsonify(tobs_dict)
     
-# DEBUG!! -- NEED TO DO after ipynb is fixed
-# DEBUG!! -- change .id=1 to most frequent station
-# DEBUG!! -- 
-# -- .all produces n(0n for each value in record[0], record[1], record[2], record[3] and also only produces 1 record
-# -- .first produces eNno for each value in record[0], record[1], record[2], record[3] and also only produces 1 record
-# -- .first previously produced 87.2 for each value in record[0], record[1], record[2], record[3] and also only produces 1 record
+# VERIFIED AS WORKING
 @app.route("/api/v1.0/<start>")
 def start(start):
     print(f"{start}")
     # most_freq_tobs_dict = {}
     station_3_obs = session.query(Measurement.date, func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
-        filter(Measurement.station == 'USC00519281').filter(Measurement.date >= start).first()
+        filter(Measurement.station == 'USC00519281').filter(Measurement.date >= start).all()
 
     # Create a list of dictionaries where each dictionary contains tobs data for a single date
     # DEBUG!! type error:  "TypeError: 'float' object is not subscriptable"
@@ -128,13 +122,13 @@ def start(start):
     # sourced from https://stackoverflow.com/questions/27453396/typeerror-float-object-is-not-subscriptable-while-saving-a-dict
     from_start_date_only = []
     start_dict = {}
-    for record in station_3_obs:
-        start_dict['Date'] = str(record)[0]
-        start_dict['Min'] = str(record)[1]
-        start_dict['Max'] = str(record)[2]
-        start_dict['Avg'] = str(record)[3]
-        from_start_date_only.append(start_dict)
-        # above code returns 87.2 for only 1 record
+    #for record in station_3_obs:
+    #    start_dict['Date'] = str(record)[0]
+    #    start_dict['Min'] = str(record)[1]
+    #    start_dict['Max'] = str(record)[2]
+    #    start_dict['Avg'] = str(record)[3]
+    #    from_start_date_only.append(start_dict)
+    #    # above code returns 87.2 for only 1 record
 
 #    most_frequent_last_12 = session.query(Measurement.date, Measurement.tobs).\
 #        filter(Measurement.date >= start).all()
@@ -143,25 +137,28 @@ def start(start):
 #        value = element[1]
         # update dictionary
 #        most_freq_tobs_dict.update({key: value})
-    return jsonify(start_dict)
+    #return jsonify(start_dict)
+    session.close()
+    return jsonify(station_3_obs)
 
-# DEBUG!! -- 
+# VERIFIED AS WORKING
 @app.route("/api/v1.0/<start>/<end>")
 def range(start, end):
     # return temp_list for range
-    example_temp_list = {'min': 53, 'avg': 67, 'max': 83}
+    #example_temp_list = {'min': 53, 'avg': 67, 'max': 83}
     station_start_and_end_dates = session.query(Measurement.date, func.min(Measurement.tobs), func.max(Measurement.tobs), func.avg(Measurement.tobs)).\
-        filter(Measurement.station == 'USC00519281').filter(Measurement.date >= start).filer(Measurement.date <= end).all()
+        filter(Measurement.station == 'USC00519281').filter(Measurement.date >= start).filter(Measurement.date <= end).all()
 
     from_start_date_end_date = []
     start_and_end_dict = {}
-    for record in station_start_and_end_dates:
-        start_and_end_dict['Date'] = str(record)[0]
-        start_and_end_dict['Min'] = str(record)[1]
-        start_and_end_dict['Max'] = str(record)[2]
-        start_and_end_dict['Avg'] = str(record)[3]
-        from_start_date_only.append(start_and_end_dict)
-    return jsonify(start_date_end_date)
+    #for record in station_start_and_end_dates:
+    #    start_and_end_dict['Date'] = str(record)[0]
+    #    start_and_end_dict['Min'] = str(record)[1]
+    #    start_and_end_dict['Max'] = str(record)[2]
+    #    start_and_end_dict['Avg'] = str(record)[3]
+    #    from_start_date_only.append(start_and_end_dict)
+    session.close()
+    return jsonify(station_start_and_end_dates)
 
 
 if __name__ == "__main__":
